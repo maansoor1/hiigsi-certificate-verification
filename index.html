@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Verify training certificates online."><title>Certificate Verification</title>
+<style>
+:root{--navy:#10243a;--blue:#185adb;--ink:#182230;--muted:#617084;--line:#dfe6ee;--bg:#f4f7fb}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink)}
+.topbar{background:#315d9b;border-bottom:4px solid #f0b83d;color:white;padding:18px 22px}.top-inner{max-width:1060px;margin:auto;display:flex;align-items:center;gap:13px}
+.logo{width:44px;height:44px;border-radius:12px;background:#ffffff18;display:grid;place-items:center;font-size:24px;border:1px solid #ffffff35}
+.brand{font-weight:750}.tagline{font-size:12px;color:#c8d5e4;margin-top:3px}
+main{max-width:920px;margin:44px auto;padding:0 18px}.hero{text-align:center;margin-bottom:28px}
+.eyebrow{color:#b88712;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:1.5px}
+h1{font-size:clamp(30px,5vw,44px);line-height:1.12;margin:12px 0;color:var(--navy);letter-spacing:-1.2px}
+.intro{max-width:610px;margin:auto;color:var(--muted);line-height:1.65}
+.panel{max-width:680px;margin:28px auto 0;background:white;border:1px solid var(--line);border-radius:20px;padding:clamp(20px,4vw,34px);box-shadow:0 12px 35px #132b4610}
+label{display:block;font-weight:700;margin-bottom:9px;font-size:14px}.searchrow{display:flex;gap:10px}
+input{min-width:0;flex:1;padding:15px 16px;border:1px solid #cbd6e2;border-radius:11px;font:inherit;outline:none}
+input:focus{border-color:var(--blue);box-shadow:0 0 0 3px #185adb1b}
+button{border:0;background:var(--blue);color:white;border-radius:11px;padding:0 21px;font:inherit;font-weight:750;cursor:pointer}
+.hint{color:var(--muted);font-size:12px;margin-top:10px}.result{margin-top:20px;display:none;border-radius:14px;padding:18px}
+.result.show{display:block}.result.valid{border:1px solid #9bdcc9;background:#effbf6}.result.invalid{border:1px solid #f0b6b6;background:#fff4f4}
+.result h2{margin:0 0 7px;font-size:18px}.result p{margin:6px 0;color:#405064;font-size:14px}
+.pill{display:inline-block;font-size:11px;letter-spacing:.6px;font-weight:800;padding:5px 8px;border-radius:999px;margin-bottom:9px;background:#d4f4e6;color:#08654e}
+.invalid .pill{background:#ffe0e0;color:#a02121}.details{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.detail{border-top:1px solid #dbe6e2;padding-top:10px}.detail small{display:block;color:var(--muted);margin-bottom:4px}
+.detail strong{font-size:14px;overflow-wrap:anywhere}.notice{max-width:680px;margin:20px auto 0;color:var(--muted);font-size:12px;line-height:1.6;text-align:center}
+footer{text-align:center;padding:28px 18px 35px;color:var(--muted);font-size:12px}
+@media(max-width:540px){.searchrow{flex-direction:column}button{padding:14px}.details{grid-template-columns:1fr}main{margin-top:30px}}
+</style></head>
+<body><header class="topbar"><div class="top-inner"><img class="brand-logo" src="logo.png" alt="Hiigsi Data & Statistical Institute logo"><div>
+<div class="brand" id="brandName">HIIGSI DATA & STATISTICAL INSTITUTE</div><div class="tagline">Official Certificate Verification Portal</div></div></div></header>
+<main><section class="hero"><div class="eyebrow">HIIGSI DATA & STATISTICAL INSTITUTE</div><h1>Verify a Certificate</h1>
+<p class="intro">Enter the unique certificate ID printed on the certificate to check whether it appears in our official issued-certificate register.</p></section>
+<section class="panel"><form id="verifyForm"><label for="certificateId">Certificate ID</label><div class="searchrow">
+<input id="certificateId" placeholder="e.g. DEMO-2026-001" autocomplete="off" required><button type="submit">Verify certificate</button></div>
+<div class="hint">Enter the ID exactly as it appears on the certificate. Extra spaces are ignored.</div></form><div id="result" class="result" role="status" aria-live="polite"></div></section>
+<p class="notice">A successful result confirms that the certificate ID is listed in this register. If details appear incorrect, contact the training provider directly.</p></main>
+<footer>© <span id="year"></span> <span id="footerBrand">Hiigsi Data & Statistical Institute</span> · Certificate Verification</footer>
+<script src="certificates.js"></script><script>
+document.getElementById("year").textContent=new Date().getFullYear();
+const brand=window.SITE_CONFIG?.brandName||"HIIGSI DATA & STATISTICAL INSTITUTE";
+document.getElementById("brandName").textContent=brand;document.getElementById("footerBrand").textContent=brand;
+const form=document.getElementById("verifyForm"),input=document.getElementById("certificateId"),result=document.getElementById("result");
+const certificates=Array.isArray(window.CERTIFICATES)?window.CERTIFICATES:[];
+function safeText(v){return String(v??"Not provided").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));}
+form.addEventListener("submit",e=>{e.preventDefault();const id=input.value.trim().toUpperCase();
+const cert=certificates.find(x=>String(x.id||"").trim().toUpperCase()===id);
+result.className="result show "+(cert&&cert.status==="valid"?"valid":"invalid");
+if(cert&&cert.status==="valid"){result.innerHTML=`<span class="pill">VERIFIED</span><h2>Certificate found in the register</h2>
+<p>The certificate ID matches a record marked as issued by this training provider.</p><div class="details">
+<div class="detail"><small>Certificate holder</small><strong>${safeText(cert.name)}</strong></div>
+<div class="detail"><small>Certificate ID</small><strong>${safeText(cert.id)}</strong></div>
+<div class="detail"><small>Course / Training</small><strong>${safeText(cert.course)}</strong></div>
+<div class="detail"><small>Issue date</small><strong>${safeText(cert.issueDate)}</strong></div></div>`;}
+else{result.innerHTML=`<span class="pill">NOT VERIFIED</span><h2>No matching issued certificate was found</h2>
+<p>Check the ID and try again. If you believe this is an error, contact the training provider. This result does not by itself prove that a document is fraudulent.</p>`;}
+});
+</script></body></html>
